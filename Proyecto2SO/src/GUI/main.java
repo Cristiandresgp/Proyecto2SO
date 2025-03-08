@@ -16,6 +16,9 @@ public class main {
     public static void main(String[] args) {
         Bienvenida interfaz = new Bienvenida();
         interfaz.setVisible(true);
+        interfaz.setSize(750,500);
+        interfaz.setLocationRelativeTo(null);
+        interfaz.setResizable(false);
     }
     
 }
