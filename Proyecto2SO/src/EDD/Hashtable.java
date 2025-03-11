@@ -4,6 +4,7 @@
  */
 package EDD;
 
+import OBJECTS.Archivo;
 import java.util.LinkedList;
 
 /**
