@@ -4,18 +4,81 @@
  */
 package GUI;
 
+import EDD.ArbolNario;
+import EDD.NodoArbol;
+import EDD.NodoDoble;
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreePath;
+
 /**
  *
  * @author cristiandresgp
  */
 public class Simulacion extends javax.swing.JFrame {
+    
+    private DefaultTreeModel treeModel;
+    private ArbolNario sistemaArchivos;
+    private DefaultMutableTreeNode root;
 
     /**
      * Creates new form Simulacion
      */
     public Simulacion() {
-        initComponents();
+    this.sistemaArchivos = new ArbolNario();
+
+    // Agrega solo una vez "home" en el sistema de archivos
+    if (sistemaArchivos.getRaiz() == null) {
+        sistemaArchivos.agregarNodo("/", "home", true);
     }
+
+    this.root = new DefaultMutableTreeNode(new NodoArbol("home", true)); // Almacena NodoArbol en el nodo visual
+    this.treeModel = new DefaultTreeModel(root);
+
+    initComponents();
+    treeSistema.setModel(treeModel);
+
+    // Construye el árbol visual
+    construirJTree();
+
+    // Listener para manejar la selección en el JTree y actualizar los botones
+    treeSistema.addTreeSelectionListener(e -> actualizarEstadoBotones());
+
+    // Establece la selección inicial en "home"
+    treeSistema.setSelectionPath(new TreePath(root.getPath()));
+
+    // Establece los iconos personalizados para directorios y archivos
+    treeSistema.setCellRenderer(new DefaultTreeCellRenderer() {
+    public Component getTreeCellRendererComponent(JTree tree, Object value,
+                                                  boolean selected, boolean expanded,
+                                                  boolean leaf, int row, boolean hasFocus) {
+        Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+        
+        if (node.getUserObject() instanceof NodoArbol) {
+            NodoArbol nodo = (NodoArbol) node.getUserObject();
+            if (nodo.isDirectorio()) {
+                setIcon(UIManager.getIcon("FileView.directoryIcon")); // Ícono de carpeta
+            } else {
+                setIcon(UIManager.getIcon("FileView.fileIcon")); // Ícono de archivo
+            }
+        }
+        return c;
+    }
+});
+
+}
+
+
+
+
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -53,7 +116,7 @@ public class Simulacion extends javax.swing.JFrame {
 
         jScrollPane1.setViewportView(treeSistema);
 
-        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 20, 120, 430));
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 20, 300, 430));
 
         tablaAsignacion.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -68,7 +131,7 @@ public class Simulacion extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(tablaAsignacion);
 
-        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 20, 440, -1));
+        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 20, 490, 430));
 
         panelMemoria.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -76,14 +139,14 @@ public class Simulacion extends javax.swing.JFrame {
         panelMemoria.setLayout(panelMemoriaLayout);
         panelMemoriaLayout.setHorizontalGroup(
             panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 218, Short.MAX_VALUE)
+            .addGap(0, 278, Short.MAX_VALUE)
         );
         panelMemoriaLayout.setVerticalGroup(
             panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 398, Short.MAX_VALUE)
         );
 
-        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 50, 220, 400));
+        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(1050, 50, 280, 400));
 
         btnCrearDirectorio.setText("📂 Crear Directorio");
         btnCrearDirectorio.addActionListener(new java.awt.event.ActionListener() {
@@ -94,9 +157,19 @@ public class Simulacion extends javax.swing.JFrame {
         jPanel1.add(btnCrearDirectorio, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 150, -1));
 
         btnCrearArchivo.setText("📄 Crear Archivo");
+        btnCrearArchivo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCrearArchivoActionPerformed(evt);
+            }
+        });
         jPanel1.add(btnCrearArchivo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 280, 150, -1));
 
         btnEliminar.setText("❌ Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
         jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 150, -1));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -126,7 +199,7 @@ public class Simulacion extends javax.swing.JFrame {
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, 210, 200));
 
         jLabel5.setText("PANEL DE MEMORIA");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(860, 20, -1, 20));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(1130, 20, -1, 20));
 
         btnGuardar.setText("💾 Guardar");
         btnGuardar.addActionListener(new java.awt.event.ActionListener() {
@@ -149,21 +222,40 @@ public class Simulacion extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1061, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1370, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCrearDirectorioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearDirectorioActionPerformed
-        // TODO add your handling code here:
+     DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    if (selectedNode == null) return;
+
+    String nombreDir = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo directorio:");
+    if (nombreDir == null || nombreDir.trim().isEmpty()) return;
+
+    if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
+
+    NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
+    NodoArbol nuevoNodo = new NodoArbol(nombreDir, true);
+    nodoPadre.agregarHijo(nuevoNodo);
+
+    // 🔥 Agregar el nodo directamente en el `JTree`
+    DefaultMutableTreeNode nuevoNodoVisual = new DefaultMutableTreeNode(nuevoNodo);
+    selectedNode.add(nuevoNodoVisual);
+
+    treeModel.reload(selectedNode); // 🔥 Recarga solo la parte modificada del árbol
+    treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath())); // 🔥 Mantiene la selección
+    actualizarEstadoBotones(); // 🔥 Asegurar que los botones se actualicen
     }//GEN-LAST:event_btnCrearDirectorioActionPerformed
 
     private void btnCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarActionPerformed
@@ -174,6 +266,214 @@ public class Simulacion extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnGuardarActionPerformed
 
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    if (selectedNode == null || selectedNode == root) {
+        JOptionPane.showMessageDialog(this, "Selecciona un archivo o directorio válido para eliminar.");
+        return;
+    }
+
+    String ruta = selectedNode.toString();
+    if (sistemaArchivos.eliminarNodo(ruta)) {
+        actualizarJTree();
+        actualizarTablaAsignacion();
+    } else {
+        JOptionPane.showMessageDialog(this, "No se pudo eliminar el elemento.");
+    }
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void btnCrearArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearArchivoActionPerformed
+       DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    if (selectedNode == null) return;
+
+    String nombreArchivo = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo archivo:");
+    if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) return;
+
+    if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
+
+    NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
+    NodoArbol nuevoNodo = new NodoArbol(nombreArchivo, false);
+    nodoPadre.agregarHijo(nuevoNodo);
+
+    // 🔥 Agregar el nodo directamente en el `JTree`
+    DefaultMutableTreeNode nuevoNodoVisual = new DefaultMutableTreeNode(nuevoNodo);
+    selectedNode.add(nuevoNodoVisual);
+
+    treeModel.reload(selectedNode); // 🔥 Recarga solo la parte modificada del árbol
+    treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath())); // 🔥 Mantiene la selección
+    actualizarEstadoBotones(); // 🔥 Asegurar que los botones se actualicen
+    }//GEN-LAST:event_btnCrearArchivoActionPerformed
+
+    /**
+     * Construye el JTree a partir del sistema de archivos
+     */
+    private void construirJTree() {
+    if (root == null) { 
+        root = new DefaultMutableTreeNode("/"); // 🔥 Si root es null, se inicializa
+        treeModel.setRoot(root);
+    }
+    root.removeAllChildren(); // ✅ Ahora no dará error porque root está inicializado
+    agregarNodosRecursivos(root, sistemaArchivos.getRaiz());
+    treeModel.reload();
+}
+
+
+    /**
+ * Método recursivo para agregar nodos al JTree
+ * @param padre Nodo del JTree
+ * @param nodo Nodo del ArbolNario
+ */
+private void agregarNodosRecursivos(DefaultMutableTreeNode padre, NodoArbol nodo) {
+    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead(); // Obtener la cabeza de la lista
+
+    while (actual != null) {
+        NodoArbol hijo = actual.getElement();
+        DefaultMutableTreeNode nuevoNodo = new DefaultMutableTreeNode(hijo.getNombre());
+        padre.add(nuevoNodo); // Agregar al JTree
+
+        if (hijo.isDirectorio()) {
+            agregarNodosRecursivos(nuevoNodo, hijo); // Llamada recursiva para subdirectorios
+        }
+        actual = actual.getNext(); // Avanzar al siguiente nodo en la lista doble
+    }
+}
+
+
+    /**
+     * Método para actualizar el JTree cuando se haga un cambio en la estructura de archivos
+     */
+    public void actualizarJTree() {
+        construirJTree();
+    }
+
+    /**
+     * Crea un directorio en el nodo seleccionado
+     */
+    private void crearDirectorio() {
+        String nombre = JOptionPane.showInputDialog("Nombre del nuevo directorio:");
+        if (nombre == null || nombre.trim().isEmpty()) return;
+
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+        if (selectedNode == null) {
+            JOptionPane.showMessageDialog(this, "Selecciona un directorio primero.");
+            return;
+        }
+
+        NodoArbol nodoPadre = sistemaArchivos.buscarNodo(selectedNode.toString());
+        if (nodoPadre != null && nodoPadre.isDirectorio()) {
+            sistemaArchivos.agregarNodo(selectedNode.toString(), nombre, true);
+            actualizarJTree();
+        }
+    }
+
+    /**
+     * Crea un archivo en el nodo seleccionado
+     */
+    private void crearArchivo() {
+        String nombre = JOptionPane.showInputDialog("Nombre del nuevo archivo:");
+        if (nombre == null || nombre.trim().isEmpty()) return;
+
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+        if (selectedNode == null) {
+            JOptionPane.showMessageDialog(this, "Selecciona un directorio primero.");
+            return;
+        }
+
+        NodoArbol nodoPadre = sistemaArchivos.buscarNodo(selectedNode.toString());
+        if (nodoPadre != null && nodoPadre.isDirectorio()) {
+            sistemaArchivos.agregarNodo(selectedNode.toString(), nombre, false);
+            actualizarJTree();
+        }
+    }
+
+    /**
+     * Elimina un archivo o directorio seleccionado
+     */
+    private void eliminarElemento() {
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+        if (selectedNode == null || selectedNode == root) {
+            JOptionPane.showMessageDialog(this, "Selecciona un archivo o directorio válido para eliminar.");
+            return;
+        }
+
+        String ruta = selectedNode.toString();
+        if (sistemaArchivos.eliminarNodo(ruta)) {
+            actualizarJTree();
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo eliminar el elemento.");
+        }
+    }
+    
+    /**
+ * Método para actualizar la tabla de asignación de archivos
+ */
+private void actualizarTablaAsignacion() {
+    DefaultTableModel modelo = (DefaultTableModel) tablaAsignacion.getModel();
+    modelo.setRowCount(0); // Limpiar la tabla antes de actualizar
+
+    for (NodoDoble<NodoArbol> nodo = sistemaArchivos.getRaiz().getHijos().getHead(); nodo != null; nodo = nodo.getNext()) {
+        NodoArbol archivo = nodo.getElement();
+        if (!archivo.isDirectorio()) { // Solo mostramos archivos en la tabla
+            Object[] fila = {archivo.getNombre(), "Tamaño en bloques (Pendiente)", "Primer bloque (Pendiente)"};
+            modelo.addRow(fila);
+        }
+    }
+}
+
+/**
+ * Método para actualizar el estado de los botones según la selección en el JTree.
+ */
+private void actualizarEstadoBotones() {
+    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    
+    if (selectedNode == null) {
+        btnCrearDirectorio.setEnabled(false);
+        btnCrearArchivo.setEnabled(false);
+        btnEliminar.setEnabled(false);
+        return;
+    }
+
+    // 🔥 Aquí aseguramos que `selectedNode.getUserObject()` sea un `NodoArbol`
+    if (!(selectedNode.getUserObject() instanceof NodoArbol)) {
+        btnCrearDirectorio.setEnabled(false);
+        btnCrearArchivo.setEnabled(false);
+        btnEliminar.setEnabled(false);
+        return;
+    }
+
+    NodoArbol nodoSeleccionado = (NodoArbol) selectedNode.getUserObject();
+    
+    btnCrearDirectorio.setEnabled(nodoSeleccionado.isDirectorio());
+    btnCrearArchivo.setEnabled(nodoSeleccionado.isDirectorio());
+    btnEliminar.setEnabled(true); // Siempre se puede eliminar cualquier nodo
+}
+
+
+private void agregarNodoAlTree(String nombre, boolean esDirectorio) {
+    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    if (selectedNode == null) return;
+
+    if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
+
+    NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
+    NodoArbol nuevoNodo = new NodoArbol(nombre, esDirectorio);
+    nodoPadre.agregarHijo(nuevoNodo);
+
+    // 🔥 Crear el nodo visual con referencia al nodo lógico
+    DefaultMutableTreeNode nuevoNodoVisual = new DefaultMutableTreeNode(nuevoNodo);
+    selectedNode.add(nuevoNodoVisual);
+
+    treeModel.reload(selectedNode);
+    treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath())); // 🔥 Mantiene la selección en el nuevo nodo
+}
+
+
+
+
+
+
+    
+    
     /**
      * @param args the command line arguments
      */
