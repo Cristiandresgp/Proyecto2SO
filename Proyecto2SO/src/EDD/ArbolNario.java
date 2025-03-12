@@ -60,14 +60,19 @@ public class ArbolNario {
      * @param esDirectorio Indica si es un directorio (true) o archivo (false)
      * @return true si se creó con éxito, false si hubo error
      */
-    public boolean agregarNodo(String rutaPadre, String nombre, boolean esDirectorio) {
-        NodoArbol padre = buscarNodo(rutaPadre);
-        if (padre == null || !padre.isDirectorio()) return false;
+    public void agregarNodo(String padre, String nombre, boolean esDirectorio) {
+    NodoArbol nodoPadre = buscarNodo(padre);
 
-        NodoArbol nuevo = new NodoArbol(nombre, esDirectorio);
-        padre.agregarHijo(nuevo);
-        return true;
+    if (nodoPadre == null || !nodoPadre.isDirectorio()) {
+        System.out.println("Error: No se encontró el directorio padre o no es un directorio.");
+        return;
     }
+
+    NodoArbol nuevoNodo = new NodoArbol(nombre, esDirectorio);
+    nodoPadre.agregarHijo(nuevoNodo);
+}
+
+
 
     /**
      * Elimina un nodo por ruta
