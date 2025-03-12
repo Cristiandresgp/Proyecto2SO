@@ -26,21 +26,153 @@ public class Simulacion extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        treeSistema = new javax.swing.JTree();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tablaAsignacion = new javax.swing.JTable();
+        panelMemoria = new javax.swing.JPanel();
+        btnCrearDirectorio = new javax.swing.JButton();
+        btnCrearArchivo = new javax.swing.JButton();
+        btnEliminar = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        labelNombreElemento = new javax.swing.JLabel();
+        lblTipoElemento = new javax.swing.JLabel();
+        lblInfoMemoria = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        btnGuardar = new javax.swing.JButton();
+        btnCargar = new javax.swing.JButton();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jScrollPane1.setViewportView(treeSistema);
+
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 20, 120, 430));
+
+        tablaAsignacion.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "Nombre del archivo", "Tamaño (bloques)", "Primer bloque asignado"
+            }
+        ));
+        jScrollPane2.setViewportView(tablaAsignacion);
+
+        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 20, 440, -1));
+
+        panelMemoria.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout panelMemoriaLayout = new javax.swing.GroupLayout(panelMemoria);
+        panelMemoria.setLayout(panelMemoriaLayout);
+        panelMemoriaLayout.setHorizontalGroup(
+            panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 218, Short.MAX_VALUE)
+        );
+        panelMemoriaLayout.setVerticalGroup(
+            panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 398, Short.MAX_VALUE)
+        );
+
+        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 50, 220, 400));
+
+        btnCrearDirectorio.setText("📂 Crear Directorio");
+        btnCrearDirectorio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCrearDirectorioActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnCrearDirectorio, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 150, -1));
+
+        btnCrearArchivo.setText("📄 Crear Archivo");
+        jPanel1.add(btnCrearArchivo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 280, 150, -1));
+
+        btnEliminar.setText("❌ Eliminar");
+        jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 150, -1));
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel1.setText("INFORMACIÓN");
+        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 10, -1, -1));
+
+        jLabel2.setText("Nombre:");
+        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, -1, -1));
+
+        jLabel3.setText("Tipo:");
+        jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, -1, -1));
+
+        jLabel4.setText("Tamaño y bloques asignados:");
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, 180, 20));
+
+        labelNombreElemento.setText("nombre");
+        jPanel2.add(labelNombreElemento, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 40, 120, -1));
+
+        lblTipoElemento.setText("tipo");
+        jPanel2.add(lblTipoElemento, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, 140, -1));
+
+        lblInfoMemoria.setText("tamaño y bloques asignados");
+        jPanel2.add(lblInfoMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, 180, -1));
+
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, 210, 200));
+
+        jLabel5.setText("PANEL DE MEMORIA");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(860, 20, -1, 20));
+
+        btnGuardar.setText("💾 Guardar");
+        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnGuardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 410, -1, -1));
+
+        btnCargar.setText("🔃 Cargar");
+        btnCargar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCargarActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnCargar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 410, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1061, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnCrearDirectorioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearDirectorioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnCrearDirectorioActionPerformed
+
+    private void btnCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnCargarActionPerformed
+
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnGuardarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -78,5 +210,25 @@ public class Simulacion extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCargar;
+    private javax.swing.JButton btnCrearArchivo;
+    private javax.swing.JButton btnCrearDirectorio;
+    private javax.swing.JButton btnEliminar;
+    private javax.swing.JButton btnGuardar;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel labelNombreElemento;
+    private javax.swing.JLabel lblInfoMemoria;
+    private javax.swing.JLabel lblTipoElemento;
+    private javax.swing.JPanel panelMemoria;
+    private javax.swing.JTable tablaAsignacion;
+    private javax.swing.JTree treeSistema;
     // End of variables declaration//GEN-END:variables
 }
