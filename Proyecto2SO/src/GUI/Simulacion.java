@@ -273,13 +273,22 @@ public class Simulacion extends javax.swing.JFrame {
         return;
     }
 
-    String ruta = selectedNode.toString();
-    if (sistemaArchivos.eliminarNodo(ruta)) {
-        actualizarJTree();
-        actualizarTablaAsignacion();
-    } else {
-        JOptionPane.showMessageDialog(this, "No se pudo eliminar el elemento.");
+    // Obtener el nodo lógico
+    NodoArbol nodoAEliminar = (NodoArbol) selectedNode.getUserObject();
+    NodoArbol nodoPadre = nodoAEliminar.getPadre(); // Obtener su padre en la estructura lógica
+
+    if (nodoPadre != null) {
+        nodoPadre.eliminarHijo(nodoAEliminar.getNombre()); // Elimina del árbol lógico
     }
+
+    // Eliminar el nodo visual del JTree
+    DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
+    if (parentNode != null) {
+        parentNode.remove(selectedNode); // Remover del árbol visual
+    }
+
+    treeModel.reload(parentNode); // Recargar el modelo visual
+    actualizarEstadoBotones(); // Refrescar los botones
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnCrearArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearArchivoActionPerformed
