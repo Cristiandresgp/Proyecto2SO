@@ -29,6 +29,8 @@ public class Simulacion extends javax.swing.JFrame {
     private DefaultTreeModel treeModel;
     private SistemaArchivos sistemaArchivos;
     private DefaultMutableTreeNode root;
+    private boolean esAdministrador = false; 
+
 
     /**
      * Creates new form Simulacion
@@ -41,6 +43,7 @@ public class Simulacion extends javax.swing.JFrame {
 
 
     initComponents();
+    configurarModo(); 
     treeSistema.setModel(treeModel);
 
     construirJTree();
@@ -67,6 +70,23 @@ public class Simulacion extends javax.swing.JFrame {
         }
     });
 }
+    
+    private void configurarModo() {
+    // 🔥 Asegurarnos de que "modo" ya fue creado por initComponents()
+    if (modo == null) {
+        System.out.println("⚠️ Error: JComboBox 'modo' no ha sido inicializado.");
+        return;
+    }
+
+    // 🔹 Configurar opciones correctas
+    modo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Usuario", "Administrador"}));
+
+    // 🔹 Agregar evento de cambio de modo
+    modo.addActionListener(evt -> cambiarModo());
+
+    System.out.println("✅ JComboBox 'modo' configurado correctamente.");
+}
+
 
 
 
@@ -103,6 +123,8 @@ public class Simulacion extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         btnGuardar = new javax.swing.JButton();
         btnCargar = new javax.swing.JButton();
+        modo = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -148,7 +170,7 @@ public class Simulacion extends javax.swing.JFrame {
                 btnCrearDirectorioActionPerformed(evt);
             }
         });
-        jPanel1.add(btnCrearDirectorio, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 150, -1));
+        jPanel1.add(btnCrearDirectorio, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 270, 150, -1));
 
         btnCrearArchivo.setText("📄 Crear Archivo");
         btnCrearArchivo.addActionListener(new java.awt.event.ActionListener() {
@@ -156,7 +178,7 @@ public class Simulacion extends javax.swing.JFrame {
                 btnCrearArchivoActionPerformed(evt);
             }
         });
-        jPanel1.add(btnCrearArchivo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 280, 150, -1));
+        jPanel1.add(btnCrearArchivo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 310, 150, -1));
 
         btnEliminar.setText("❌ Eliminar");
         btnEliminar.addActionListener(new java.awt.event.ActionListener() {
@@ -164,7 +186,7 @@ public class Simulacion extends javax.swing.JFrame {
                 btnEliminarActionPerformed(evt);
             }
         });
-        jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 150, -1));
+        jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 350, 150, -1));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -190,7 +212,7 @@ public class Simulacion extends javax.swing.JFrame {
         lblInfoMemoria.setText("tamaño y bloques asignados");
         jPanel2.add(lblInfoMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, 180, -1));
 
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, 210, 200));
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 60, 210, 200));
 
         jLabel5.setText("PANEL DE MEMORIA");
         jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(1130, 20, -1, 20));
@@ -210,6 +232,17 @@ public class Simulacion extends javax.swing.JFrame {
             }
         });
         jPanel1.add(btnCargar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 410, -1, -1));
+
+        modo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        modo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modoActionPerformed(evt);
+            }
+        });
+        jPanel1.add(modo, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 20, 150, -1));
+
+        jLabel6.setText("MODO:");
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 30, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -319,6 +352,10 @@ public class Simulacion extends javax.swing.JFrame {
     actualizarEstadoBotones();
     actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamente
     }//GEN-LAST:event_btnCrearArchivoActionPerformed
+
+    private void modoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_modoActionPerformed
 
     /**
      * Construye el JTree a partir del sistema de archivos
@@ -523,7 +560,7 @@ private void agregarArchivosATabla(NodoArbol nodo, DefaultTableModel modelo) {
  */
 private void actualizarEstadoBotones() {
     DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
-    
+
     if (selectedNode == null) {
         btnCrearDirectorio.setEnabled(false);
         btnCrearArchivo.setEnabled(false);
@@ -531,7 +568,6 @@ private void actualizarEstadoBotones() {
         return;
     }
 
-    // 🔥 Aquí aseguramos que `selectedNode.getUserObject()` sea un `NodoArbol`
     if (!(selectedNode.getUserObject() instanceof NodoArbol)) {
         btnCrearDirectorio.setEnabled(false);
         btnCrearArchivo.setEnabled(false);
@@ -540,11 +576,18 @@ private void actualizarEstadoBotones() {
     }
 
     NodoArbol nodoSeleccionado = (NodoArbol) selectedNode.getUserObject();
-    
-    btnCrearDirectorio.setEnabled(nodoSeleccionado.isDirectorio());
-    btnCrearArchivo.setEnabled(nodoSeleccionado.isDirectorio());
-    btnEliminar.setEnabled(true); // Siempre se puede eliminar cualquier nodo
+
+    if (esAdministrador) {
+        btnCrearDirectorio.setEnabled(nodoSeleccionado.isDirectorio());
+        btnCrearArchivo.setEnabled(nodoSeleccionado.isDirectorio());
+        btnEliminar.setEnabled(true);
+    } else {
+        btnCrearDirectorio.setEnabled(false);
+        btnCrearArchivo.setEnabled(false);
+        btnEliminar.setEnabled(false);
+    }
 }
+
 
 
 private void agregarNodoAlTree(String nombre, boolean esDirectorio) {
@@ -564,6 +607,13 @@ private void agregarNodoAlTree(String nombre, boolean esDirectorio) {
     treeModel.reload(selectedNode);
     treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath())); // 🔥 Mantiene la selección en el nuevo nodo
 }
+
+private void cambiarModo() {
+    esAdministrador = modo.getSelectedItem().equals("Administrador");
+    System.out.println("🔄 Modo cambiado: " + (esAdministrador ? "Administrador" : "Usuario"));
+    actualizarEstadoBotones();
+}
+
 
 
 
@@ -618,6 +668,7 @@ private void agregarNodoAlTree(String nombre, boolean esDirectorio) {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -625,6 +676,7 @@ private void agregarNodoAlTree(String nombre, boolean esDirectorio) {
     private javax.swing.JLabel labelNombreElemento;
     private javax.swing.JLabel lblInfoMemoria;
     private javax.swing.JLabel lblTipoElemento;
+    private javax.swing.JComboBox<String> modo;
     private javax.swing.JPanel panelMemoria;
     private javax.swing.JTable tablaAsignacion;
     private javax.swing.JTree treeSistema;
