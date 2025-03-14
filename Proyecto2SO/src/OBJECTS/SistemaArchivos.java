@@ -28,11 +28,12 @@ public class SistemaArchivos {
     this.totalBloques = totalBloques;
     this.sd = new Bloque[totalBloques];
 
-    // 🔥 Asegurar que cada posición del array está inicializada con un objeto Bloque
+    // 🔥 Inicializar la SD con bloques vacíos (null)
     for (int i = 0; i < totalBloques; i++) {
-        sd[i] = new Bloque(i);  // Antes faltaba esta inicialización
+        sd[i] = null; // ✅ Ahora los bloques estarán vacíos hasta que sean asignados
     }
 }
+
 
     public int getTotalBloques() {
         return totalBloques;
@@ -63,29 +64,47 @@ public class SistemaArchivos {
      * Asigna bloques de almacenamiento a un archivo.
      * @param archivo Archivo al que se le asignarán bloques.
      */
-    public void asignarBloques(Archivo archivo) {
+    public boolean asignarBloques(Archivo archivo) {
     int bloquesNecesarios = archivo.getTamañoEnBloques();
     int primerBloque = -1;
     int bloqueAnterior = -1;
+    int bloquesAsignados = 0;
 
-    // 🔥 Verificar que hay bloques disponibles antes de asignar
-    for (int i = 0; i < totalBloques && bloquesNecesarios > 0; i++) {
-        if (sd[i] != null && sd[i].getSiguienteBloque() == -1) {  // Asegurar que el bloque no sea null
+    // 🔥 Buscar bloques libres
+    for (int i = 0; i < totalBloques && bloquesAsignados < bloquesNecesarios; i++) {
+        if (sd[i] == null) { // ✅ Ahora buscamos bloques libres
             if (primerBloque == -1) primerBloque = i;
             if (bloqueAnterior != -1) sd[bloqueAnterior].setSiguienteBloque(i);
             bloqueAnterior = i;
-            bloquesNecesarios--;
+
+            sd[i] = new Bloque(i); // ✅ Marcar el bloque como asignado
+            bloquesAsignados++;
         }
     }
 
-    if (bloquesNecesarios > 0) {
+    // ❌ Si no hay suficientes bloques, liberar los que fueron asignados
+    if (bloquesAsignados < bloquesNecesarios) {
         System.out.println("⚠️ No hay suficientes bloques disponibles para asignar el archivo.");
-        return; // Salir si no hay suficiente espacio
+        liberarBloques(primerBloque); // 🔥 Rollback
+        return false;
     }
 
     archivo.setPrimerBloque(primerBloque);
     tablaAsignacion.insert(archivo.getNombre(), archivo);
+    return true; // ✅ Asignación exitosa
 }
+    
+    private void liberarBloques(int primerBloque) {
+    int bloqueActual = primerBloque;
+    while (bloqueActual != -1 && sd[bloqueActual] != null) {
+        int siguiente = sd[bloqueActual].getSiguienteBloque();
+        sd[bloqueActual] = null; // ✅ Liberar bloque
+        bloqueActual = siguiente;
+    }
+}
+
+
+
 
 
     /**
@@ -94,5 +113,17 @@ public class SistemaArchivos {
     public void imprimirSistemaArchivos() {
         estructuraArchivos.imprimirSistemaArchivos();
     }
+    
+    public int contarBloquesDisponibles() {
+    int disponibles = 0;
+    for (int i = 0; i < totalBloques; i++) {
+        if (sd[i] == null) { // ✅ Solo cuenta los bloques libres
+            disponibles++;
+        }
+    }
+    return disponibles;
+}
+
+
 }
 

@@ -328,38 +328,63 @@ public class Simulacion extends javax.swing.JFrame {
 
     private void btnCrearArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearArchivoActionPerformed
     DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
-    if (selectedNode == null) return;
+if (selectedNode == null) return;
 
-    String nombreArchivo = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo archivo:");
-    if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) return;
+String nombreArchivo = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo archivo:");
+if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) return;
 
-    if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
+// 🔥 Pedir tamaño en bloques
+int tamañoBloques = 0;
+while (true) {
+    String input = JOptionPane.showInputDialog(this, "Ingrese el tamaño del archivo en bloques:");
+    if (input == null) return; // Usuario canceló
 
-    NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
+    try {
+        tamañoBloques = Integer.parseInt(input);
+        if (tamañoBloques > 0) break; // Solo aceptar valores positivos
+        JOptionPane.showMessageDialog(this, "El tamaño debe ser un número entero positivo.");
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Ingrese un número válido.");
+    }
+}
 
-    // 🔥 Crear un archivo y asignarle bloques
-    Archivo nuevoArchivo = new Archivo(nombreArchivo, 1, -1); // Tamaño 1 bloque, primer bloque por asignar
-    sistemaArchivos.asignarBloques(nuevoArchivo); // Asigna los bloques en la SD
+if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
+NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
 
-    // 🔥 Agregar el archivo al sistema de archivos
-    NodoArbol nuevoNodo = new NodoArbol(nombreArchivo, false);
-    nodoPadre.agregarHijo(nuevoNodo);
+// 🔥 Verificar la cantidad de bloques disponibles antes de asignar
+int bloquesDisponibles = sistemaArchivos.contarBloquesDisponibles();
+System.out.println("ℹ️ Bloques disponibles en la SD: " + bloquesDisponibles);
 
-    // 🔥 Agregar a la tabla de asignación
-    sistemaArchivos.getTablaAsignacion().insert(nombreArchivo, nuevoArchivo);
+if (tamañoBloques > bloquesDisponibles) {
+    JOptionPane.showMessageDialog(this, "No hay suficientes bloques disponibles en la SD. Bloques libres: " + bloquesDisponibles);
+    return;
+}
 
-    // 🔥 Verificar si el archivo se está agregando correctamente
-    System.out.println("Archivo creado y almacenado en la tabla: " + nuevoArchivo.getNombre());
+// 🔥 Crear archivo con el tamaño ingresado
+Archivo nuevoArchivo = new Archivo(nombreArchivo, tamañoBloques, -1);
 
-    // 🔥 Agregar nodo visual en el JTree
-    DefaultMutableTreeNode nuevoNodoVisual = new DefaultMutableTreeNode(nuevoNodo);
-    selectedNode.add(nuevoNodoVisual);
+// 🔥 Asignar bloques en la SD
+if (!sistemaArchivos.asignarBloques(nuevoArchivo)) { 
+    JOptionPane.showMessageDialog(this, "No hay suficientes bloques disponibles en la SD.");
+    return;
+}
 
-    treeModel.reload(selectedNode);
-    treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath()));
+// 🔥 Agregar archivo al sistema
+NodoArbol nuevoNodo = new NodoArbol(nombreArchivo, false);
+nodoPadre.agregarHijo(nuevoNodo);
+sistemaArchivos.getTablaAsignacion().insert(nombreArchivo, nuevoArchivo);
 
-    actualizarEstadoBotones();
-    actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamente
+System.out.println("Archivo creado y almacenado en la tabla: " + nuevoArchivo.getNombre());
+
+// 🔥 Agregar nodo visual en el JTree
+DefaultMutableTreeNode nuevoNodoVisual = new DefaultMutableTreeNode(nuevoNodo);
+selectedNode.add(nuevoNodoVisual);
+
+treeModel.reload(selectedNode);
+treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath()));
+
+actualizarEstadoBotones();
+actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamente
     }//GEN-LAST:event_btnCrearArchivoActionPerformed
 
     private void modoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modoActionPerformed
