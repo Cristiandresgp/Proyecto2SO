@@ -125,6 +125,7 @@ public class Simulacion extends javax.swing.JFrame {
         btnCargar = new javax.swing.JButton();
         modo = new javax.swing.JComboBox<>();
         jLabel6 = new javax.swing.JLabel();
+        btnActualizar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -186,7 +187,7 @@ public class Simulacion extends javax.swing.JFrame {
                 btnEliminarActionPerformed(evt);
             }
         });
-        jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 350, 150, -1));
+        jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 390, 150, -1));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -223,7 +224,7 @@ public class Simulacion extends javax.swing.JFrame {
                 btnGuardarActionPerformed(evt);
             }
         });
-        jPanel1.add(btnGuardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 410, -1, -1));
+        jPanel1.add(btnGuardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 450, -1, -1));
 
         btnCargar.setText("🔃 Cargar");
         btnCargar.addActionListener(new java.awt.event.ActionListener() {
@@ -231,7 +232,7 @@ public class Simulacion extends javax.swing.JFrame {
                 btnCargarActionPerformed(evt);
             }
         });
-        jPanel1.add(btnCargar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 410, -1, -1));
+        jPanel1.add(btnCargar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 450, -1, -1));
 
         modo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         modo.addActionListener(new java.awt.event.ActionListener() {
@@ -243,6 +244,14 @@ public class Simulacion extends javax.swing.JFrame {
 
         jLabel6.setText("MODO:");
         jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 30, -1, -1));
+
+        btnActualizar.setText("🔄 Actualizar");
+        btnActualizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnActualizarActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnActualizar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 350, 150, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -356,6 +365,51 @@ public class Simulacion extends javax.swing.JFrame {
     private void modoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_modoActionPerformed
+
+    private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
+    if (!esAdministrador) {
+        JOptionPane.showMessageDialog(this, "Modo Usuario: No puedes actualizar nombres de archivos.");
+        return;
+    }
+
+    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    if (selectedNode == null || !(selectedNode.getUserObject() instanceof NodoArbol)) {
+        JOptionPane.showMessageDialog(this, "Selecciona un archivo válido.");
+        return;
+    }
+
+    NodoArbol nodoSeleccionado = (NodoArbol) selectedNode.getUserObject();
+    if (nodoSeleccionado.isDirectorio()) {
+        JOptionPane.showMessageDialog(this, "Solo se pueden actualizar nombres de archivos.");
+        return;
+    }
+
+    String nuevoNombre = JOptionPane.showInputDialog(this, "Ingrese el nuevo nombre del archivo:", nodoSeleccionado.getNombre());
+    if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+        return; // El usuario canceló o no ingresó nada
+    }
+
+    // 🔥 Renombrar en la estructura del árbol
+    nodoSeleccionado.setNombre(nuevoNombre);
+
+    // 🔥 Renombrar en la tabla de asignación (Hashtable)
+    ListaDoble<Archivo> listaArchivos = sistemaArchivos.getTablaAsignacion().search(nodoSeleccionado.getNombre());
+    Archivo archivo = (listaArchivos != null && listaArchivos.getHead() != null) ? listaArchivos.getHead().getElement() : null;
+    if (archivo != null) {
+        sistemaArchivos.getTablaAsignacion().delete(nodoSeleccionado.getNombre(), archivo);
+        archivo.setNombre(nuevoNombre);
+        sistemaArchivos.getTablaAsignacion().insert(nuevoNombre, archivo);
+    }
+
+    // 🔥 Actualizar el JTree con el nuevo nombre
+    selectedNode.setUserObject(nodoSeleccionado);
+    treeModel.reload(selectedNode);
+
+    // 🔥 Actualizar la tabla de asignación
+    actualizarTablaAsignacion();
+
+    JOptionPane.showMessageDialog(this, "Archivo renombrado con éxito.");
+    }//GEN-LAST:event_btnActualizarActionPerformed
 
     /**
      * Construye el JTree a partir del sistema de archivos
@@ -565,6 +619,7 @@ private void actualizarEstadoBotones() {
         btnCrearDirectorio.setEnabled(false);
         btnCrearArchivo.setEnabled(false);
         btnEliminar.setEnabled(false);
+        btnActualizar.setEnabled(false);
         return;
     }
 
@@ -572,6 +627,7 @@ private void actualizarEstadoBotones() {
         btnCrearDirectorio.setEnabled(false);
         btnCrearArchivo.setEnabled(false);
         btnEliminar.setEnabled(false);
+        btnActualizar.setEnabled(false);
         return;
     }
 
@@ -581,10 +637,12 @@ private void actualizarEstadoBotones() {
         btnCrearDirectorio.setEnabled(nodoSeleccionado.isDirectorio());
         btnCrearArchivo.setEnabled(nodoSeleccionado.isDirectorio());
         btnEliminar.setEnabled(true);
+        btnActualizar.setEnabled(!nodoSeleccionado.isDirectorio());
     } else {
         btnCrearDirectorio.setEnabled(false);
         btnCrearArchivo.setEnabled(false);
         btnEliminar.setEnabled(false);
+        btnActualizar.setEnabled(false);
     }
 }
 
@@ -658,6 +716,7 @@ private void cambiarModo() {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnActualizar;
     private javax.swing.JButton btnCargar;
     private javax.swing.JButton btnCrearArchivo;
     private javax.swing.JButton btnCrearDirectorio;
