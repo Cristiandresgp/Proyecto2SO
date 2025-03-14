@@ -5,8 +5,11 @@
 package GUI;
 
 import EDD.ArbolNario;
+import EDD.ListaDoble;
 import EDD.NodoArbol;
 import EDD.NodoDoble;
+import OBJECTS.Archivo;
+import OBJECTS.SistemaArchivos;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -24,56 +27,47 @@ import javax.swing.tree.TreePath;
 public class Simulacion extends javax.swing.JFrame {
     
     private DefaultTreeModel treeModel;
-    private ArbolNario sistemaArchivos;
+    private SistemaArchivos sistemaArchivos;
     private DefaultMutableTreeNode root;
 
     /**
      * Creates new form Simulacion
      */
     public Simulacion() {
-    this.sistemaArchivos = new ArbolNario();
+    this.sistemaArchivos = new SistemaArchivos(100);  // 🔥 Asegúrate de darle un número válido de bloques
 
-    // Agrega solo una vez "home" en el sistema de archivos
-    if (sistemaArchivos.getRaiz() == null) {
-        sistemaArchivos.agregarNodo("/", "home", true);
-    }
-
-    this.root = new DefaultMutableTreeNode(new NodoArbol("home", true)); // Almacena NodoArbol en el nodo visual
+    this.root = new DefaultMutableTreeNode(sistemaArchivos.getEstructuraArchivos().getRaiz());
     this.treeModel = new DefaultTreeModel(root);
+
 
     initComponents();
     treeSistema.setModel(treeModel);
 
-    // Construye el árbol visual
     construirJTree();
 
-    // Listener para manejar la selección en el JTree y actualizar los botones
     treeSistema.addTreeSelectionListener(e -> actualizarEstadoBotones());
-
-    // Establece la selección inicial en "home"
     treeSistema.setSelectionPath(new TreePath(root.getPath()));
 
-    // Establece los iconos personalizados para directorios y archivos
     treeSistema.setCellRenderer(new DefaultTreeCellRenderer() {
-    public Component getTreeCellRendererComponent(JTree tree, Object value,
-                                                  boolean selected, boolean expanded,
-                                                  boolean leaf, int row, boolean hasFocus) {
-        Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        
-        if (node.getUserObject() instanceof NodoArbol) {
-            NodoArbol nodo = (NodoArbol) node.getUserObject();
-            if (nodo.isDirectorio()) {
-                setIcon(UIManager.getIcon("FileView.directoryIcon")); // Ícono de carpeta
-            } else {
-                setIcon(UIManager.getIcon("FileView.fileIcon")); // Ícono de archivo
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+                                                      boolean selected, boolean expanded,
+                                                      boolean leaf, int row, boolean hasFocus) {
+            Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            
+            if (node.getUserObject() instanceof NodoArbol) {
+                NodoArbol nodo = (NodoArbol) node.getUserObject();
+                if (nodo.isDirectorio()) {
+                    setIcon(UIManager.getIcon("FileView.directoryIcon")); // Ícono de carpeta
+                } else {
+                    setIcon(UIManager.getIcon("FileView.fileIcon")); // Ícono de archivo
+                }
             }
+            return c;
         }
-        return c;
-    }
-});
-
+    });
 }
+
 
 
 
@@ -267,32 +261,31 @@ public class Simulacion extends javax.swing.JFrame {
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
     if (selectedNode == null || selectedNode == root) {
         JOptionPane.showMessageDialog(this, "Selecciona un archivo o directorio válido para eliminar.");
         return;
     }
 
-    // Obtener el nodo lógico
     NodoArbol nodoAEliminar = (NodoArbol) selectedNode.getUserObject();
-    NodoArbol nodoPadre = nodoAEliminar.getPadre(); // Obtener su padre en la estructura lógica
+    NodoArbol nodoPadre = nodoAEliminar.getPadre();
 
     if (nodoPadre != null) {
-        nodoPadre.eliminarHijo(nodoAEliminar.getNombre()); // Elimina del árbol lógico
+        nodoPadre.eliminarHijo(nodoAEliminar.getNombre());
     }
 
-    // Eliminar el nodo visual del JTree
     DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
     if (parentNode != null) {
-        parentNode.remove(selectedNode); // Remover del árbol visual
+        parentNode.remove(selectedNode);
     }
 
-    treeModel.reload(parentNode); // Recargar el modelo visual
-    actualizarEstadoBotones(); // Refrescar los botones
+    treeModel.reload(parentNode);
+    actualizarEstadoBotones();
+    actualizarTablaAsignacion(); // 🔥 ACTUALIZA LA TABLA TRAS ELIMINAR UN ARCHIVO
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnCrearArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearArchivoActionPerformed
-       DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
     if (selectedNode == null) return;
 
     String nombreArchivo = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo archivo:");
@@ -301,30 +294,45 @@ public class Simulacion extends javax.swing.JFrame {
     if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
 
     NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
+
+    // 🔥 Crear un archivo y asignarle bloques
+    Archivo nuevoArchivo = new Archivo(nombreArchivo, 1, -1); // Tamaño 1 bloque, primer bloque por asignar
+    sistemaArchivos.asignarBloques(nuevoArchivo); // Asigna los bloques en la SD
+
+    // 🔥 Agregar el archivo al sistema de archivos
     NodoArbol nuevoNodo = new NodoArbol(nombreArchivo, false);
     nodoPadre.agregarHijo(nuevoNodo);
 
-    // 🔥 Agregar el nodo directamente en el `JTree`
+    // 🔥 Agregar a la tabla de asignación
+    sistemaArchivos.getTablaAsignacion().insert(nombreArchivo, nuevoArchivo);
+
+    // 🔥 Verificar si el archivo se está agregando correctamente
+    System.out.println("Archivo creado y almacenado en la tabla: " + nuevoArchivo.getNombre());
+
+    // 🔥 Agregar nodo visual en el JTree
     DefaultMutableTreeNode nuevoNodoVisual = new DefaultMutableTreeNode(nuevoNodo);
     selectedNode.add(nuevoNodoVisual);
 
-    treeModel.reload(selectedNode); // 🔥 Recarga solo la parte modificada del árbol
-    treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath())); // 🔥 Mantiene la selección
-    actualizarEstadoBotones(); // 🔥 Asegurar que los botones se actualicen
+    treeModel.reload(selectedNode);
+    treeSistema.setSelectionPath(new TreePath(nuevoNodoVisual.getPath()));
+
+    actualizarEstadoBotones();
+    actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamente
     }//GEN-LAST:event_btnCrearArchivoActionPerformed
 
     /**
      * Construye el JTree a partir del sistema de archivos
      */
+    
     private void construirJTree() {
-    if (root == null) { 
-        root = new DefaultMutableTreeNode("/"); // 🔥 Si root es null, se inicializa
-        treeModel.setRoot(root);
-    }
-    root.removeAllChildren(); // ✅ Ahora no dará error porque root está inicializado
-    agregarNodosRecursivos(root, sistemaArchivos.getRaiz());
-    treeModel.reload();
+    root.removeAllChildren();  // Limpiar nodos viejos
+
+    // 🔥 Construir el árbol usando el sistema real de archivos
+    agregarNodosRecursivos(root, sistemaArchivos.getEstructuraArchivos().getRaiz());
+
+    treeModel.reload(); // Recargar visualización
 }
+
 
 
     /**
@@ -368,9 +376,9 @@ private void agregarNodosRecursivos(DefaultMutableTreeNode padre, NodoArbol nodo
             return;
         }
 
-        NodoArbol nodoPadre = sistemaArchivos.buscarNodo(selectedNode.toString());
+        NodoArbol nodoPadre = sistemaArchivos.getEstructuraArchivos().buscarNodo(selectedNode.toString());
         if (nodoPadre != null && nodoPadre.isDirectorio()) {
-            sistemaArchivos.agregarNodo(selectedNode.toString(), nombre, true);
+            sistemaArchivos.getEstructuraArchivos().agregarNodo(selectedNode.toString(), nombre, true);
             actualizarJTree();
         }
     }
@@ -388,9 +396,9 @@ private void agregarNodosRecursivos(DefaultMutableTreeNode padre, NodoArbol nodo
             return;
         }
 
-        NodoArbol nodoPadre = sistemaArchivos.buscarNodo(selectedNode.toString());
+        NodoArbol nodoPadre = sistemaArchivos.getEstructuraArchivos().buscarNodo(selectedNode.toString());
         if (nodoPadre != null && nodoPadre.isDirectorio()) {
-            sistemaArchivos.agregarNodo(selectedNode.toString(), nombre, false);
+            sistemaArchivos.getEstructuraArchivos().agregarNodo(selectedNode.toString(), nombre, false);
             actualizarJTree();
         }
     }
@@ -406,28 +414,109 @@ private void agregarNodosRecursivos(DefaultMutableTreeNode padre, NodoArbol nodo
         }
 
         String ruta = selectedNode.toString();
-        if (sistemaArchivos.eliminarNodo(ruta)) {
+        if (sistemaArchivos.getEstructuraArchivos().eliminarNodo(ruta)) {
             actualizarJTree();
         } else {
             JOptionPane.showMessageDialog(this, "No se pudo eliminar el elemento.");
         }
     }
-    
-    /**
- * Método para actualizar la tabla de asignación de archivos
- */
 private void actualizarTablaAsignacion() {
     DefaultTableModel modelo = (DefaultTableModel) tablaAsignacion.getModel();
-    modelo.setRowCount(0); // Limpiar la tabla antes de actualizar
+    modelo.setRowCount(0); // 🔥 Limpiar la tabla antes de actualizar
 
-    for (NodoDoble<NodoArbol> nodo = sistemaArchivos.getRaiz().getHijos().getHead(); nodo != null; nodo = nodo.getNext()) {
-        NodoArbol archivo = nodo.getElement();
-        if (!archivo.isDirectorio()) { // Solo mostramos archivos en la tabla
-            Object[] fila = {archivo.getNombre(), "Tamaño en bloques (Pendiente)", "Primer bloque (Pendiente)"};
-            modelo.addRow(fila);
+    System.out.println("🔄 Actualizando tabla de asignación de archivos...");
+
+    recorrerEstructuraParaTabla(sistemaArchivos.getEstructuraArchivos().getRaiz(), modelo);
+
+    int totalArchivos = modelo.getRowCount();
+    System.out.println("✅ Total de archivos en la tabla: " + totalArchivos);
+
+    // 🔥 FORZAR REFRESCO EN LA TABLA
+    SwingUtilities.invokeLater(() -> {
+        modelo.fireTableDataChanged();
+        tablaAsignacion.repaint();
+    });
+}
+
+
+
+
+/**
+ * Método recursivo para recorrer la estructura y llenar la tabla con archivos.
+ */
+private void recorrerEstructuraParaTabla(NodoArbol nodo, DefaultTableModel modelo) {
+    if (nodo == null) return;
+
+    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead();
+    while (actual != null) {
+        NodoArbol hijo = actual.getElement();
+
+        if (!hijo.isDirectorio()) { // ✅ Solo mostrar archivos
+            Archivo archivo = buscarArchivoEnTabla(hijo.getNombre());
+
+            if (archivo != null) {
+                System.out.println("📂 Añadiendo archivo a la tabla: " + archivo.getNombre());
+                modelo.addRow(new Object[]{archivo.getNombre(), archivo.getTamañoEnBloques(), archivo.getPrimerBloque()});
+            } else {
+                System.out.println("⚠️ Archivo no encontrado en la tabla de asignación: " + hijo.getNombre());
+            }
+        } else {
+            recorrerEstructuraParaTabla(hijo, modelo); // 🔁 Recursión para subdirectorios
         }
+
+        actual = actual.getNext();
     }
 }
+
+
+
+
+
+/**
+ * Busca un archivo en la tabla de asignación (Hashtable).
+ */
+private Archivo buscarArchivoEnTabla(String nombreArchivo) {
+    int index = sistemaArchivos.getTablaAsignacion().hashFunction(nombreArchivo);
+    ListaDoble<Archivo> lista = sistemaArchivos.getTablaAsignacion().getHashtable()[index];
+
+    if (lista != null && lista.getHead() != null) {
+        NodoDoble<Archivo> actual = lista.getHead();
+        while (actual != null) {
+            if (actual.getElement().getNombre().equals(nombreArchivo)) {
+                System.out.println("✅ Archivo encontrado en la tabla de asignación: " + actual.getElement().getNombre());
+                return actual.getElement();  // ✅ Retorna el archivo encontrado
+            }
+            actual = actual.getNext();
+        }
+    }
+
+    System.out.println("⚠️ Archivo NO encontrado en la tabla de asignación: " + nombreArchivo);
+    return null;
+}
+
+
+
+
+
+
+/**
+ * Método recursivo para agregar todos los archivos a la tabla
+ */
+private void agregarArchivosATabla(NodoArbol nodo, DefaultTableModel modelo) {
+    if (nodo == null) return;
+
+    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead();
+    while (actual != null) {
+        NodoArbol hijo = actual.getElement();
+        if (!hijo.isDirectorio()) { // Solo mostrar archivos
+            modelo.addRow(new Object[]{hijo.getNombre(), "Pendiente", "Pendiente"});
+        } else {
+            agregarArchivosATabla(hijo, modelo); // Llamada recursiva para subdirectorios
+        }
+        actual = actual.getNext();
+    }
+}
+
 
 /**
  * Método para actualizar el estado de los botones según la selección en el JTree.

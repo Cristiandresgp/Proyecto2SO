@@ -23,15 +23,33 @@ public class SistemaArchivos {
      * @param totalBloques Cantidad total de bloques en la SD.
      */
     public SistemaArchivos(int totalBloques) {
-        this.estructuraArchivos = new ArbolNario();
-        this.tablaAsignacion = new Hashtable();
-        this.totalBloques = totalBloques;
-        this.sd = new Bloque[totalBloques];
+    this.estructuraArchivos = new ArbolNario();
+    this.tablaAsignacion = new Hashtable();
+    this.totalBloques = totalBloques;
+    this.sd = new Bloque[totalBloques];
 
-        for (int i = 0; i < totalBloques; i++) {
-            sd[i] = new Bloque(i);
-        }
+    // 🔥 Asegurar que cada posición del array está inicializada con un objeto Bloque
+    for (int i = 0; i < totalBloques; i++) {
+        sd[i] = new Bloque(i);  // Antes faltaba esta inicialización
     }
+}
+
+    public int getTotalBloques() {
+        return totalBloques;
+    }
+
+    public void setTotalBloques(int totalBloques) {
+        this.totalBloques = totalBloques;
+    }
+
+    public Bloque[] getSd() {
+        return sd;
+    }
+
+    public void setSd(Bloque[] sd) {
+        this.sd = sd;
+    }
+
 
     public ArbolNario getEstructuraArchivos() {
         return estructuraArchivos;
@@ -46,22 +64,29 @@ public class SistemaArchivos {
      * @param archivo Archivo al que se le asignarán bloques.
      */
     public void asignarBloques(Archivo archivo) {
-        int bloquesNecesarios = archivo.getTamañoEnBloques();
-        int primerBloque = -1;
-        int bloqueAnterior = -1;
+    int bloquesNecesarios = archivo.getTamañoEnBloques();
+    int primerBloque = -1;
+    int bloqueAnterior = -1;
 
-        for (int i = 0; i < totalBloques; i++) {
-            if (sd[i].getSiguienteBloque() == -1) {
-                if (primerBloque == -1) primerBloque = i;
-                if (bloqueAnterior != -1) sd[bloqueAnterior].setSiguienteBloque(i);
-                bloqueAnterior = i;
-                bloquesNecesarios--;
-                if (bloquesNecesarios == 0) break;
-            }
+    // 🔥 Verificar que hay bloques disponibles antes de asignar
+    for (int i = 0; i < totalBloques && bloquesNecesarios > 0; i++) {
+        if (sd[i] != null && sd[i].getSiguienteBloque() == -1) {  // Asegurar que el bloque no sea null
+            if (primerBloque == -1) primerBloque = i;
+            if (bloqueAnterior != -1) sd[bloqueAnterior].setSiguienteBloque(i);
+            bloqueAnterior = i;
+            bloquesNecesarios--;
         }
-        archivo.setPrimerBloque(primerBloque);
-        tablaAsignacion.insert(archivo.getNombre(), archivo);
     }
+
+    if (bloquesNecesarios > 0) {
+        System.out.println("⚠️ No hay suficientes bloques disponibles para asignar el archivo.");
+        return; // Salir si no hay suficiente espacio
+    }
+
+    archivo.setPrimerBloque(primerBloque);
+    tablaAsignacion.insert(archivo.getNombre(), archivo);
+}
+
 
     /**
      * Método para imprimir la estructura del sistema de archivos.

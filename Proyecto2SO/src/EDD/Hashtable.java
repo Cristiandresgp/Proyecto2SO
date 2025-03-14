@@ -70,10 +70,20 @@ public class Hashtable {
     }
 
     // Método para imprimir la tabla hash
-    public void print (){
-        for (int i = 0; i < this.hashtable.length; i++) {
-            System.out.println("["+ i + "]"+ this.hashtable[i].printString());
+    public void print() {
+    System.out.println("📌 Contenido de la tabla de asignación:");
+    for (int i = 0; i < this.hashtable.length; i++) {
+        if (!this.hashtable[i].isEmpty()) {
+            System.out.print("[" + i + "] -> ");
+            NodoDoble<Archivo> actual = this.hashtable[i].getHead();
+            while (actual != null) {
+                System.out.print(actual.getElement().getNombre() + " ");
+                actual = actual.getNext();
+            }
+            System.out.println();
         }
     }
+}
+
 }
 
