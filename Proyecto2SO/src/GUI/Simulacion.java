@@ -77,22 +77,29 @@ public class Simulacion extends javax.swing.JFrame {
 }
 
 public void inicializarPanelMemoria() {
-        panelMemoria.setLayout(new GridLayout(10, 10, 2, 2));
-        bloquesBotones = new JButton[sistemaArchivos.getTotalBloques()];
-        
-        for (int i = 0; i < bloquesBotones.length; i++) {
-            bloquesBotones[i] = new JButton();
-            bloquesBotones[i].setPreferredSize(new Dimension(20, 20));
-            bloquesBotones[i].setBackground(Color.GREEN); // 🟢 Bloques libres por defecto
-            panelMemoria.add(bloquesBotones[i]);
-        }
-        
-        panelMemoria.revalidate();
-        panelMemoria.repaint();
-        actualizarVistaSD(); 
+    panelMemoria.removeAll(); // Limpiar el panel antes de agregar nuevos botones
+    panelMemoria.setLayout(new GridLayout(10, 10, 2, 2)); // Diseño de rejilla
+    
+    int totalBloques = sistemaArchivos.getTotalBloques();
+    bloquesBotones = new JButton[totalBloques];
+
+    for (int i = 0; i < totalBloques; i++) {
+        bloquesBotones[i] = new JButton(); // Inicializar botón
+        bloquesBotones[i].setPreferredSize(new Dimension(20, 20)); // Tamaño fijo
+        bloquesBotones[i].setOpaque(true); // Asegurar que el color de fondo se aplique
+        bloquesBotones[i].setBorderPainted(false); // Opcional: quitar bordes
+        bloquesBotones[i].setBackground(Color.GREEN); // Establecer color verde
+        panelMemoria.add(bloquesBotones[i]); // Agregar al panel
     }
 
-    public void actualizarVistaSD() {
+    panelMemoria.revalidate(); // Actualizar UI
+    panelMemoria.repaint(); // Redibujar panel
+    actualizarVistaSD(); // Actualizar vista si es necesario
+}
+
+
+public void actualizarVistaSD() {
+    SwingUtilities.invokeLater(() -> { // Forzar actualización en el hilo de UI
         for (int i = 0; i < bloquesBotones.length; i++) {
             if (sistemaArchivos.estaBloqueOcupado(i)) {
                 bloquesBotones[i].setBackground(Color.RED); // 🔴 Bloque ocupado
@@ -104,7 +111,9 @@ public void inicializarPanelMemoria() {
         }
         panelMemoria.revalidate();
         panelMemoria.repaint();
-    }
+    });
+}
+
     
 
     
@@ -188,7 +197,18 @@ public void inicializarPanelMemoria() {
         jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 20, 490, 430));
 
         panelMemoria.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        panelMemoria.setLayout(new java.awt.GridLayout());
+
+        javax.swing.GroupLayout panelMemoriaLayout = new javax.swing.GroupLayout(panelMemoria);
+        panelMemoria.setLayout(panelMemoriaLayout);
+        panelMemoriaLayout.setHorizontalGroup(
+            panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 366, Short.MAX_VALUE)
+        );
+        panelMemoriaLayout.setVerticalGroup(
+            panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 396, Short.MAX_VALUE)
+        );
+
         jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(1060, 50, 370, 400));
 
         btnCrearDirectorio.setText("📂 Crear Directorio");
