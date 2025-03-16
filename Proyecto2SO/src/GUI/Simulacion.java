@@ -17,6 +17,7 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -344,7 +345,16 @@ public void actualizarVistaSD() {
     }//GEN-LAST:event_btnCargarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-        // TODO add your handling code here:
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Guardar archivo de sistema");
+    fileChooser.setSelectedFile(new File("sistema_archivos.txt")); // Nombre predeterminado
+
+    int userSelection = fileChooser.showSaveDialog(this);
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File archivoSeleccionado = fileChooser.getSelectedFile();
+        sistemaArchivos.guardarEstadoEnTxt(archivoSeleccionado.getAbsolutePath());
+        JOptionPane.showMessageDialog(this, "Estado del sistema guardado en: " + archivoSeleccionado.getAbsolutePath());
+    }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
