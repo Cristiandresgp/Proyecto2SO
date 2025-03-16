@@ -10,10 +10,14 @@ import EDD.ListaDoble;
 import EDD.NodoArbol;
 import EDD.NodoDoble;
 import GUI.Simulacion;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Clase que administra el sistema de archivos completo.
@@ -199,6 +203,101 @@ private void guardarTablaAsignacion(BufferedWriter writer) throws IOException {
         }
     }
 }
+
+public void cargarDesdeTxt(String nombreArchivo) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(nombreArchivo))) {
+        estructuraArchivos = new ArbolNario(); // Reiniciar la estructura
+        tablaAsignacion = new Hashtable(); // Reiniciar la tabla hash
+        sd = new Bloque[totalBloques]; // Reiniciar los bloques de memoria
+
+        String linea;
+        boolean leyendoArchivos = false;
+        NodoArbol nodoActual = estructuraArchivos.getRaiz(); // La raíz ya existe
+
+        while ((linea = reader.readLine()) != null) {
+            linea = linea.trim();
+
+            if (linea.isEmpty() || linea.equals("Estructura del Sistema de Archivos") || linea.equals("=================================")) {
+                continue;
+            }
+
+            if (linea.contains("Tabla de Asignación de Archivos:")) {
+                leyendoArchivos = true;
+                continue;
+            }
+
+            if (!leyendoArchivos) {
+                nodoActual = procesarLineaEstructura(linea, nodoActual);
+            } else {
+                procesarLineaArchivo(linea);
+            }
+        }
+
+        // 🔥 Asegurar que los nodos cargados sean editables en la UI
+        simulacion.actualizarJTree(); 
+
+        System.out.println("✅ Estado cargado desde: " + nombreArchivo);
+    } catch (IOException e) {
+        System.out.println("❌ Error al cargar el estado: " + e.getMessage());
+    }
+}
+
+private NodoArbol procesarLineaEstructura(String linea, NodoArbol nodoPadre) {
+    if (linea.isEmpty()) return nodoPadre;
+
+    int nivel = 0;
+    while (linea.startsWith("  ")) {
+        nivel++;
+        linea = linea.substring(2);
+    }
+
+    boolean esDirectorio = linea.startsWith("[D] ");
+    String nombre = linea.substring(4); 
+
+    if (nombre.equals("/") && esDirectorio) {
+        return estructuraArchivos.getRaiz();
+    }
+
+    NodoArbol nuevoNodo = new NodoArbol(nombre, esDirectorio);
+    nuevoNodo.setPadre(nodoPadre);  // 🔥 Asignar el padre correctamente
+    nodoPadre.agregarHijo(nuevoNodo);
+
+    return esDirectorio ? nuevoNodo : nodoPadre;
+}
+
+
+private void procesarLineaArchivo(String linea) {
+    if (linea.isEmpty() || !linea.startsWith("Archivo: ")) return;
+
+    Pattern pattern = Pattern.compile("Archivo: (.+?) \\| Tamaño: (\\d+) bloques \\| Bloque inicial: (\\d+)");
+    Matcher matcher = pattern.matcher(linea);
+
+    if (matcher.find()) {
+        String nombre = matcher.group(1);
+        int tamaño = Integer.parseInt(matcher.group(2));
+        int primerBloque = Integer.parseInt(matcher.group(3));
+
+        Archivo archivo = new Archivo(nombre, tamaño, primerBloque);
+        tablaAsignacion.insert(nombre, archivo);
+
+        // 🔥 Reservar los bloques en memoria
+        asignarBloquesDesdeCarga(archivo, primerBloque, tamaño);
+    }
+}
+
+private void asignarBloquesDesdeCarga(Archivo archivo, int primerBloque, int tamaño) {
+    int bloqueActual = primerBloque;
+    for (int i = 0; i < tamaño; i++) {
+        if (bloqueActual >= totalBloques) {
+            System.out.println("⚠️ Error: Bloque fuera de rango.");
+            return;
+        }
+        sd[bloqueActual] = new Bloque(bloqueActual);
+        bloqueActual++;
+    }
+}
+
+
 
 
 
