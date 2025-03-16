@@ -38,7 +38,7 @@ public class Simulacion extends javax.swing.JFrame {
      * Creates new form Simulacion
      */
     public Simulacion() {
-    this.sistemaArchivos = new SistemaArchivos(100);  // 🔥 Asegúrate de darle un número válido de bloques
+    this.sistemaArchivos = new SistemaArchivos(100, this);  // 🔥 Asegúrate de darle un número válido de bloques
 
     this.root = new DefaultMutableTreeNode(sistemaArchivos.getEstructuraArchivos().getRaiz());
     this.treeModel = new DefaultTreeModel(root);
@@ -202,14 +202,14 @@ public void actualizarVistaSD() {
         panelMemoria.setLayout(panelMemoriaLayout);
         panelMemoriaLayout.setHorizontalGroup(
             panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 366, Short.MAX_VALUE)
+            .addGap(0, 376, Short.MAX_VALUE)
         );
         panelMemoriaLayout.setVerticalGroup(
             panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 396, Short.MAX_VALUE)
         );
 
-        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(1060, 50, 370, 400));
+        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(1060, 50, 380, 400));
 
         btnCrearDirectorio.setText("📂 Crear Directorio");
         btnCrearDirectorio.addActionListener(new java.awt.event.ActionListener() {
@@ -311,8 +311,7 @@ public void actualizarVistaSD() {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE))
         );
 
         pack();

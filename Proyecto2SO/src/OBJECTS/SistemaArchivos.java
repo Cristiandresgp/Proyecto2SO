@@ -6,6 +6,7 @@ package OBJECTS;
 
 import EDD.ArbolNario;
 import EDD.Hashtable;
+import GUI.Simulacion;
 
 /**
  * Clase que administra el sistema de archivos completo.
@@ -17,16 +18,18 @@ public class SistemaArchivos {
     private Hashtable tablaAsignacion;
     private int totalBloques;
     private Bloque[] sd;
+    private Simulacion simulacion;
     
     /**
      * Constructor del Sistema de Archivos.
      * @param totalBloques Cantidad total de bloques en la SD.
      */
-    public SistemaArchivos(int totalBloques) {
+    public SistemaArchivos(int totalBloques, Simulacion simulacion) {
     this.estructuraArchivos = new ArbolNario();
     this.tablaAsignacion = new Hashtable();
     this.totalBloques = totalBloques;
     this.sd = new Bloque[totalBloques];
+    this.simulacion = simulacion;
 
     // 🔥 Inicializar la SD con bloques vacíos (null)
     for (int i = 0; i < totalBloques; i++) {
@@ -94,11 +97,13 @@ public class SistemaArchivos {
     if (bloquesAsignados < bloquesNecesarios) {
         System.out.println("⚠️ No hay suficientes bloques disponibles para asignar el archivo.");
         liberarBloques(primerBloque); // 🔥 Rollback
+        simulacion.actualizarVistaSD();
         return false;
     }
 
     archivo.setPrimerBloque(primerBloque);
     tablaAsignacion.insert(archivo.getNombre(), archivo);
+    simulacion.actualizarVistaSD();
     return true; // ✅ Asignación exitosa
 }
     
@@ -109,6 +114,7 @@ public class SistemaArchivos {
         sd[bloqueActual] = null; // ✅ Liberar bloque
         bloqueActual = siguiente;
     }
+    simulacion.actualizarVistaSD();
 }
 
 
