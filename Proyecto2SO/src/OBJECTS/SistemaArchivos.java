@@ -6,7 +6,14 @@ package OBJECTS;
 
 import EDD.ArbolNario;
 import EDD.Hashtable;
+import EDD.ListaDoble;
+import EDD.NodoArbol;
+import EDD.NodoDoble;
 import GUI.Simulacion;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashSet;
 
 /**
  * Clase que administra el sistema de archivos completo.
@@ -143,6 +150,56 @@ public void actualizarVistaSD() {
     }
     return disponibles;
 }
+    
+    
+    
+    
+    public void guardarEstadoEnTxt(String nombreArchivo) {
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo))) {
+        writer.write("Estructura del Sistema de Archivos\n");
+        writer.write("=================================\n\n");
+        guardarNodoEnTxt(writer, estructuraArchivos.getRaiz(), 0);
+        writer.write("\nTabla de Asignación de Archivos:\n");
+        writer.write("=================================\n");
+        guardarTablaAsignacion(writer);
+        System.out.println("✅ Estado guardado en: " + nombreArchivo);
+    } catch (IOException e) {
+        System.out.println("❌ Error al guardar el estado: " + e.getMessage());
+    }
+}
+
+private void guardarNodoEnTxt(BufferedWriter writer, NodoArbol nodo, int nivel) throws IOException {
+    for (int i = 0; i < nivel; i++) writer.write("  "); // Indentación
+    writer.write((nodo.isDirectorio() ? "[D] " : "[A] ") + nodo.getNombre() + "\n");
+
+    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead();
+    while (actual != null) {
+        guardarNodoEnTxt(writer, actual.getElement(), nivel + 1);
+        actual = actual.getNext();
+    }
+}
+
+private void guardarTablaAsignacion(BufferedWriter writer) throws IOException {
+    HashSet<String> archivosGuardados = new HashSet<>(); // Para evitar duplicados
+
+    for (int i = 0; i < tablaAsignacion.getHashSize(); i++) {
+        ListaDoble<Archivo> lista = tablaAsignacion.getHashtable()[i];
+        if (lista != null && !lista.isEmpty()) {
+            NodoDoble<Archivo> actual = lista.getHead();
+            while (actual != null) {
+                Archivo archivo = actual.getElement();
+                if (!archivosGuardados.contains(archivo.getNombre())) { // Evita duplicados
+                    writer.write("Archivo: " + archivo.getNombre() +
+                                 " | Tamaño: " + archivo.getTamañoEnBloques() +
+                                 " bloques | Bloque inicial: " + archivo.getPrimerBloque() + "\n");
+                    archivosGuardados.add(archivo.getNombre());
+                }
+                actual = actual.getNext();
+            }
+        }
+    }
+}
+
 
 
 }
