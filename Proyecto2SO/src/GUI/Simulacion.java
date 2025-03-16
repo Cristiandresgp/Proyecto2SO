@@ -261,8 +261,8 @@ public void actualizarVistaSD() {
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 60, 210, 200));
 
-        jLabel5.setText("PANEL DE MEMORIA");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(1190, 20, -1, 20));
+        jLabel5.setText("PANEL DE SIMULACIÓN DEL SD");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(1150, 20, -1, 20));
 
         btnGuardar.setText("💾 Guardar");
         btnGuardar.addActionListener(new java.awt.event.ActionListener() {
@@ -358,7 +358,8 @@ public void actualizarVistaSD() {
     NodoArbol nodoPadre = nodoAEliminar.getPadre();
 
     if (nodoPadre != null) {
-        nodoPadre.eliminarHijo(nodoAEliminar.getNombre());
+        // 🔥 Llamar a eliminarNodo con referencia al sistema de archivos
+        sistemaArchivos.getEstructuraArchivos().eliminarNodo(nodoAEliminar.getNombre(), sistemaArchivos);
     }
 
     DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) selectedNode.getParent();
@@ -368,7 +369,11 @@ public void actualizarVistaSD() {
 
     treeModel.reload(parentNode);
     actualizarEstadoBotones();
-    actualizarTablaAsignacion(); // 🔥 ACTUALIZA LA TABLA TRAS ELIMINAR UN ARCHIVO
+
+    // 🔥 Actualizar la interfaz gráfica tras eliminar
+    actualizarTablaAsignacion();
+    sistemaArchivos.actualizarVistaSD();
+
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnCrearArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearArchivoActionPerformed
@@ -578,7 +583,7 @@ private void agregarNodosRecursivos(DefaultMutableTreeNode padre, NodoArbol nodo
         }
 
         String ruta = selectedNode.toString();
-        if (sistemaArchivos.getEstructuraArchivos().eliminarNodo(ruta)) {
+        if (sistemaArchivos.getEstructuraArchivos().eliminarNodo(ruta, sistemaArchivos)) {
             actualizarJTree();
         } else {
             JOptionPane.showMessageDialog(this, "No se pudo eliminar el elemento.");

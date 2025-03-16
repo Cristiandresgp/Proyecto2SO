@@ -5,6 +5,9 @@
 
 package EDD;
 
+import OBJECTS.Archivo;
+import OBJECTS.SistemaArchivos;
+
 /**
  *
  * @author cristiandresgp
@@ -79,18 +82,75 @@ public class ArbolNario {
      * @param ruta Ruta completa del nodo a eliminar
      * @return true si se eliminó correctamente, false si no se encontró
      */
-    public boolean eliminarNodo(String ruta) {
-        if (ruta.equals("/")) return false;
+  public boolean eliminarNodo(String ruta, SistemaArchivos sistema) {
+    if (ruta.equals("/")) return false;
 
-        String[] partes = ruta.split("/");
-        String nombreEliminar = partes[partes.length - 1];
-        String rutaPadre = ruta.substring(0, ruta.lastIndexOf("/"));
+    String[] partes = ruta.split("/");
+    String nombreEliminar = partes[partes.length - 1];
 
-        NodoArbol padre = buscarNodo(rutaPadre);
-        if (padre == null) return false;
+    int index = ruta.lastIndexOf("/");
+    String rutaPadre = (index == -1) ? "/" : ruta.substring(0, index);
 
-        return padre.eliminarHijo(nombreEliminar);
+    NodoArbol padre = buscarNodo(rutaPadre);
+    if (padre == null) return false;
+
+    NodoArbol nodoAEliminar = null;
+    NodoDoble<NodoArbol> actual = padre.getHijos().getHead();
+    while (actual != null) {
+        if (actual.getElement().getNombre().equals(nombreEliminar)) {
+            nodoAEliminar = actual.getElement();
+            break;
+        }
+        actual = actual.getNext();
     }
+
+    if (nodoAEliminar == null) return false;
+
+    // 🔥 Si es un directorio, eliminar todos los archivos dentro y liberar bloques
+    if (nodoAEliminar.isDirectorio()) {
+        eliminarContenidoRecursivo(nodoAEliminar, sistema);
+    } else {
+        // 🔥 Si es un archivo, liberar sus bloques
+        ListaDoble<Archivo> listaArchivos = sistema.getTablaAsignacion().search(nombreEliminar);
+        if (listaArchivos != null && listaArchivos.getHead() != null) {
+            Archivo archivo = listaArchivos.getHead().getElement();
+            sistema.liberarBloques(archivo.getPrimerBloque());
+            sistema.getTablaAsignacion().delete(nombreEliminar, archivo);
+        }
+    }
+
+    return padre.eliminarHijo(nombreEliminar);
+}
+  
+  private void eliminarContenidoRecursivo(NodoArbol nodo, SistemaArchivos sistema) {
+    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead();
+    
+    while (actual != null) {
+        NodoArbol hijo = actual.getElement();
+        
+        if (hijo.isDirectorio()) {
+            // 🔁 Llamada recursiva para eliminar subdirectorios
+            eliminarContenidoRecursivo(hijo, sistema);
+        } else {
+            // 🔥 Si es un archivo, liberar sus bloques
+            ListaDoble<Archivo> listaArchivos = sistema.getTablaAsignacion().search(hijo.getNombre());
+            if (listaArchivos != null && listaArchivos.getHead() != null) {
+                Archivo archivo = listaArchivos.getHead().getElement();
+                sistema.liberarBloques(archivo.getPrimerBloque());
+                sistema.getTablaAsignacion().delete(hijo.getNombre(), archivo);
+            }
+        }
+        
+        actual = actual.getNext();
+    }
+
+    // 🔥 Finalmente, eliminar todos los hijos del nodo
+    nodo.getHijos().setHead(null);
+}
+
+
+
+
 
     /**
      * Imprime la estructura del árbol de manera recursiva

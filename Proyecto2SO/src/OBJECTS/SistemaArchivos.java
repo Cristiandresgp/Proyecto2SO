@@ -107,16 +107,22 @@ public class SistemaArchivos {
     return true; // ✅ Asignación exitosa
 }
     
-    private void liberarBloques(int primerBloque) {
+    public void liberarBloques(int primerBloque) {
     int bloqueActual = primerBloque;
     while (bloqueActual != -1 && sd[bloqueActual] != null) {
         int siguiente = sd[bloqueActual].getSiguienteBloque();
         sd[bloqueActual] = null; // ✅ Liberar bloque
         bloqueActual = siguiente;
     }
+    
+    // 🔥 Notificar a la UI que la memoria se actualizó
     simulacion.actualizarVistaSD();
 }
 
+
+public void actualizarVistaSD() {
+    simulacion.actualizarVistaSD();
+}
 
 
 
