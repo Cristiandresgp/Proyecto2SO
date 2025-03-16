@@ -249,7 +249,7 @@ public void actualizarVistaSD() {
         jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, -1, -1));
 
         jLabel4.setText("Tamaño y bloques asignados:");
-        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, 180, 20));
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, 200, 20));
 
         labelNombreElemento.setText("nombre");
         jPanel2.add(labelNombreElemento, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 40, 120, -1));
@@ -341,7 +341,21 @@ public void actualizarVistaSD() {
     }//GEN-LAST:event_btnCrearDirectorioActionPerformed
 
     private void btnCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarActionPerformed
-        // TODO add your handling code here:
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Cargar estado del sistema");
+
+    int userSelection = fileChooser.showOpenDialog(this);
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File archivoSeleccionado = fileChooser.getSelectedFile();
+        sistemaArchivos.cargarDesdeTxt(archivoSeleccionado.getAbsolutePath());
+
+        // 🔄 Actualizar la interfaz gráfica
+        actualizarJTree();
+        actualizarVistaSD();
+        actualizarTablaAsignacion();
+
+        JOptionPane.showMessageDialog(this, "Estado del sistema cargado desde: " + archivoSeleccionado.getAbsolutePath());
+    }
     }//GEN-LAST:event_btnCargarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
@@ -504,12 +518,12 @@ actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamen
      */
     
     private void construirJTree() {
-    root.removeAllChildren();  // Limpiar nodos viejos
+    root.removeAllChildren(); 
 
-    // 🔥 Construir el árbol usando el sistema real de archivos
+    // 🔥 Construir el árbol usando la estructura real de archivos
     agregarNodosRecursivos(root, sistemaArchivos.getEstructuraArchivos().getRaiz());
 
-    treeModel.reload(); // Recargar visualización
+    treeModel.reload(); 
 }
 
 
@@ -520,17 +534,18 @@ actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamen
  * @param nodo Nodo del ArbolNario
  */
 private void agregarNodosRecursivos(DefaultMutableTreeNode padre, NodoArbol nodo) {
-    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead(); // Obtener la cabeza de la lista
+    NodoDoble<NodoArbol> actual = nodo.getHijos().getHead(); 
 
     while (actual != null) {
         NodoArbol hijo = actual.getElement();
-        DefaultMutableTreeNode nuevoNodo = new DefaultMutableTreeNode(hijo.getNombre());
-        padre.add(nuevoNodo); // Agregar al JTree
+        DefaultMutableTreeNode nuevoNodo = new DefaultMutableTreeNode(hijo); // 🔥 Guardar la referencia real
+
+        padre.add(nuevoNodo); 
 
         if (hijo.isDirectorio()) {
-            agregarNodosRecursivos(nuevoNodo, hijo); // Llamada recursiva para subdirectorios
+            agregarNodosRecursivos(nuevoNodo, hijo);
         }
-        actual = actual.getNext(); // Avanzar al siguiente nodo en la lista doble
+        actual = actual.getNext();
     }
 }
 
@@ -711,7 +726,9 @@ private void actualizarEstadoBotones() {
         return;
     }
 
-    if (!(selectedNode.getUserObject() instanceof NodoArbol)) {
+    // 🔥 Verificar si el nodo seleccionado es un NodoArbol válido
+    Object userObject = selectedNode.getUserObject();
+    if (!(userObject instanceof NodoArbol)) {
         btnCrearDirectorio.setEnabled(false);
         btnCrearArchivo.setEnabled(false);
         btnEliminar.setEnabled(false);
@@ -719,20 +736,16 @@ private void actualizarEstadoBotones() {
         return;
     }
 
-    NodoArbol nodoSeleccionado = (NodoArbol) selectedNode.getUserObject();
+    NodoArbol nodoSeleccionado = (NodoArbol) userObject;
 
-    if (esAdministrador) {
-        btnCrearDirectorio.setEnabled(nodoSeleccionado.isDirectorio());
-        btnCrearArchivo.setEnabled(nodoSeleccionado.isDirectorio());
-        btnEliminar.setEnabled(true);
-        btnActualizar.setEnabled(!nodoSeleccionado.isDirectorio());
-    } else {
-        btnCrearDirectorio.setEnabled(false);
-        btnCrearArchivo.setEnabled(false);
-        btnEliminar.setEnabled(false);
-        btnActualizar.setEnabled(false);
-    }
+    // 🔥 Habilitar los botones si el usuario es administrador
+    btnCrearDirectorio.setEnabled(esAdministrador && nodoSeleccionado.isDirectorio());
+    btnCrearArchivo.setEnabled(esAdministrador && nodoSeleccionado.isDirectorio());
+    btnEliminar.setEnabled(esAdministrador);
+    btnActualizar.setEnabled(esAdministrador && !nodoSeleccionado.isDirectorio());
 }
+
+
 
 
 
