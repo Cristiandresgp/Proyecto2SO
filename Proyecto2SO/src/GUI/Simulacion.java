@@ -262,7 +262,7 @@ public void actualizarVistaSD() {
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 60, 210, 200));
 
         jLabel5.setText("PANEL DE MEMORIA");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(1130, 20, -1, 20));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(1190, 20, -1, 20));
 
         btnGuardar.setText("💾 Guardar");
         btnGuardar.addActionListener(new java.awt.event.ActionListener() {
@@ -437,7 +437,7 @@ actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamen
     }//GEN-LAST:event_modoActionPerformed
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
-    if (!esAdministrador) {
+        if (!esAdministrador) {
         JOptionPane.showMessageDialog(this, "Modo Usuario: No puedes actualizar nombres de archivos.");
         return;
     }
@@ -460,25 +460,28 @@ actualizarTablaAsignacion(); // 🔥 Ahora sí actualizará la tabla correctamen
     }
 
     // 🔥 Renombrar en la estructura del árbol
+    String nombreAnterior = nodoSeleccionado.getNombre();
     nodoSeleccionado.setNombre(nuevoNombre);
 
     // 🔥 Renombrar en la tabla de asignación (Hashtable)
-    ListaDoble<Archivo> listaArchivos = sistemaArchivos.getTablaAsignacion().search(nodoSeleccionado.getNombre());
+    ListaDoble<Archivo> listaArchivos = sistemaArchivos.getTablaAsignacion().search(nombreAnterior);
     Archivo archivo = (listaArchivos != null && listaArchivos.getHead() != null) ? listaArchivos.getHead().getElement() : null;
+
     if (archivo != null) {
-        sistemaArchivos.getTablaAsignacion().delete(nodoSeleccionado.getNombre(), archivo);
+        sistemaArchivos.getTablaAsignacion().delete(nombreAnterior, archivo); // ✅ Eliminar entrada anterior
         archivo.setNombre(nuevoNombre);
-        sistemaArchivos.getTablaAsignacion().insert(nuevoNombre, archivo);
+        sistemaArchivos.getTablaAsignacion().insert(nuevoNombre, archivo); // ✅ Insertar con nuevo nombre
     }
 
     // 🔥 Actualizar el JTree con el nuevo nombre
     selectedNode.setUserObject(nodoSeleccionado);
     treeModel.reload(selectedNode);
 
-    // 🔥 Actualizar la tabla de asignación
+    // 🔥 Forzar la actualización de la tabla después de renombrar
     actualizarTablaAsignacion();
 
     JOptionPane.showMessageDialog(this, "Archivo renombrado con éxito.");
+
     }//GEN-LAST:event_btnActualizarActionPerformed
 
     /**

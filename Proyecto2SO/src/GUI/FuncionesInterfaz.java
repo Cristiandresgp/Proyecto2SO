@@ -22,7 +22,7 @@ public class FuncionesInterfaz {
     
     public static void openSimulacion() {
         getSimulacion().setVisible(true);
-        getSimulacion().setSize(1350,550);
+        getSimulacion().setSize(1480,550);
         getSimulacion().setLocationRelativeTo(null);
         getSimulacion().setResizable(false);
     }
