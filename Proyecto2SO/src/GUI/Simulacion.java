@@ -9,6 +9,7 @@ import EDD.ListaDoble;
 import EDD.NodoArbol;
 import EDD.NodoDoble;
 import OBJECTS.Archivo;
+import OBJECTS.Bloque;
 import OBJECTS.SistemaArchivos;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -30,6 +31,7 @@ public class Simulacion extends javax.swing.JFrame {
     private SistemaArchivos sistemaArchivos;
     private DefaultMutableTreeNode root;
     private boolean esAdministrador = false; 
+    private JButton[] bloquesBotones;
 
 
     /**
@@ -47,6 +49,9 @@ public class Simulacion extends javax.swing.JFrame {
     treeSistema.setModel(treeModel);
 
     construirJTree();
+//    panelMemoria.setLayout(new GridLayout(10, 10, 2, 2));
+    inicializarPanelMemoria();
+    actualizarVistaSD();
 
     treeSistema.addTreeSelectionListener(e -> actualizarEstadoBotones());
     treeSistema.setSelectionPath(new TreePath(root.getPath()));
@@ -70,6 +75,38 @@ public class Simulacion extends javax.swing.JFrame {
         }
     });
 }
+
+public void inicializarPanelMemoria() {
+        panelMemoria.setLayout(new GridLayout(10, 10, 2, 2));
+        bloquesBotones = new JButton[sistemaArchivos.getTotalBloques()];
+        
+        for (int i = 0; i < bloquesBotones.length; i++) {
+            bloquesBotones[i] = new JButton();
+            bloquesBotones[i].setPreferredSize(new Dimension(20, 20));
+            bloquesBotones[i].setBackground(Color.GREEN); // 🟢 Bloques libres por defecto
+            panelMemoria.add(bloquesBotones[i]);
+        }
+        
+        panelMemoria.revalidate();
+        panelMemoria.repaint();
+        actualizarVistaSD(); 
+    }
+
+    public void actualizarVistaSD() {
+        for (int i = 0; i < bloquesBotones.length; i++) {
+            if (sistemaArchivos.estaBloqueOcupado(i)) {
+                bloquesBotones[i].setBackground(Color.RED); // 🔴 Bloque ocupado
+                bloquesBotones[i].setText("X"); // Marcar con una "X" los ocupados
+            } else {
+                bloquesBotones[i].setBackground(Color.GREEN); // 🟢 Bloque libre
+                bloquesBotones[i].setText(""); // Vaciar texto en bloques libres
+            }
+        }
+        panelMemoria.revalidate();
+        panelMemoria.repaint();
+    }
+    
+
     
     private void configurarModo() {
     // 🔥 Asegurarnos de que "modo" ya fue creado por initComponents()
@@ -150,20 +187,9 @@ public class Simulacion extends javax.swing.JFrame {
 
         jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 20, 490, 430));
 
-        panelMemoria.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        javax.swing.GroupLayout panelMemoriaLayout = new javax.swing.GroupLayout(panelMemoria);
-        panelMemoria.setLayout(panelMemoriaLayout);
-        panelMemoriaLayout.setHorizontalGroup(
-            panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 278, Short.MAX_VALUE)
-        );
-        panelMemoriaLayout.setVerticalGroup(
-            panelMemoriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 398, Short.MAX_VALUE)
-        );
-
-        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(1050, 50, 280, 400));
+        panelMemoria.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        panelMemoria.setLayout(new java.awt.GridLayout());
+        jPanel1.add(panelMemoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(1060, 50, 370, 400));
 
         btnCrearDirectorio.setText("📂 Crear Directorio");
         btnCrearDirectorio.addActionListener(new java.awt.event.ActionListener() {
@@ -259,14 +285,14 @@ public class Simulacion extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1370, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1553, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
         pack();

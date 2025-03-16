@@ -17,7 +17,7 @@ public class SistemaArchivos {
     private Hashtable tablaAsignacion;
     private int totalBloques;
     private Bloque[] sd;
-
+    
     /**
      * Constructor del Sistema de Archivos.
      * @param totalBloques Cantidad total de bloques en la SD.
@@ -38,7 +38,7 @@ public class SistemaArchivos {
     public int getTotalBloques() {
         return totalBloques;
     }
-
+    
     public void setTotalBloques(int totalBloques) {
         this.totalBloques = totalBloques;
     }
@@ -50,7 +50,15 @@ public class SistemaArchivos {
     public void setSd(Bloque[] sd) {
         this.sd = sd;
     }
+    
+    public boolean estaBloqueOcupado(int index) {
+    if (index < 0 || index >= totalBloques) {
+        return false; // Si el índice está fuera de rango, asumimos que no está ocupado
+    }
+    return sd[index] != null; // Devuelve true si el bloque está ocupado, false si está libre
+}
 
+    
 
     public ArbolNario getEstructuraArchivos() {
         return estructuraArchivos;
