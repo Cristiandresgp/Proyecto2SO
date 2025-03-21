@@ -248,7 +248,7 @@ public void actualizarVistaSD() {
         jLabel3.setText("Tipo:");
         jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, -1, -1));
 
-        jLabel4.setText("Tamaño y bloques asignados:");
+        jLabel4.setText("Tamaño (bloques):");
         jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, 200, 20));
 
         labelNombreElemento.setText("nombre");
@@ -319,12 +319,20 @@ public void actualizarVistaSD() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCrearDirectorioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearDirectorioActionPerformed
-     DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+     jLabel4.setVisible(false);
+     lblInfoMemoria.setVisible(false);
+     labelNombreElemento.setText("nombre");
+     
+         String directorio = "Directorio";
+lblTipoElemento.setText(directorio);
+
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
     if (selectedNode == null) return;
 
     String nombreDir = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo directorio:");
     if (nombreDir == null || nombreDir.trim().isEmpty()) return;
-
+    
+    labelNombreElemento.setText(nombreDir);
     if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
 
     NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
@@ -401,11 +409,18 @@ public void actualizarVistaSD() {
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnCrearArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearArchivoActionPerformed
-    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
+     String archivo = "Archivo";
+lblTipoElemento.setText(archivo);
+labelNombreElemento.setText("nombre");
+     jLabel4.setVisible(true);
+     lblInfoMemoria.setVisible(true);
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) treeSistema.getLastSelectedPathComponent();
 if (selectedNode == null) return;
 
 String nombreArchivo = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo archivo:");
-if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) return;
+if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) return;      
+labelNombreElemento.setText(nombreArchivo);
+
 
 // 🔥 Pedir tamaño en bloques
 int tamañoBloques = 0;
@@ -421,6 +436,9 @@ while (true) {
         JOptionPane.showMessageDialog(this, "Ingrese un número válido.");
     }
 }
+
+lblInfoMemoria.setText(Integer.toString(tamañoBloques));
+
 
 if (!(selectedNode.getUserObject() instanceof NodoArbol)) return;
 NodoArbol nodoPadre = (NodoArbol) selectedNode.getUserObject();
@@ -841,4 +859,9 @@ private void cambiarModo() {
     private javax.swing.JTable tablaAsignacion;
     private javax.swing.JTree treeSistema;
     // End of variables declaration//GEN-END:variables
+
+public boolean esAdmin() {
+    return esAdministrador;
+}
+
 }

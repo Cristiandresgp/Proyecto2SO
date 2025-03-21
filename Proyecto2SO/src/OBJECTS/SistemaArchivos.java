@@ -18,6 +18,12 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*; 
+
 
 /**
  * Clase que administra el sistema de archivos completo.
@@ -30,6 +36,7 @@ public class SistemaArchivos {
     private int totalBloques;
     private Bloque[] sd;
     private Simulacion simulacion;
+    private BufferedWriter logWriter;
     
     /**
      * Constructor del Sistema de Archivos.
@@ -48,7 +55,8 @@ public class SistemaArchivos {
     }
 }
 
-
+     
+    
     public int getTotalBloques() {
         return totalBloques;
     }
@@ -103,6 +111,14 @@ public class SistemaArchivos {
             bloquesAsignados++;
         }
     }
+    
+    if (bloquesAsignados < bloquesNecesarios) {
+            liberarBloques(primerBloque);
+            simulacion.actualizarVistaSD();
+            registrarEvento("Error: No hay suficientes bloques para asignar el archivo '" + archivo.getNombre() + "'");
+            return false;
+        }
+    
 
     // ❌ Si no hay suficientes bloques, liberar los que fueron asignados
     if (bloquesAsignados < bloquesNecesarios) {
@@ -111,10 +127,12 @@ public class SistemaArchivos {
         simulacion.actualizarVistaSD();
         return false;
     }
-
+    
+    
     archivo.setPrimerBloque(primerBloque);
     tablaAsignacion.insert(archivo.getNombre(), archivo);
     simulacion.actualizarVistaSD();
+    registrarEvento("Archivo '" + archivo.getNombre() + "' asignado con éxito. Bloque inicial: " + primerBloque);
     return true; // ✅ Asignación exitosa
 }
     
@@ -128,6 +146,7 @@ public class SistemaArchivos {
     
     // 🔥 Notificar a la UI que la memoria se actualizó
     simulacion.actualizarVistaSD();
+    registrarEvento("Bloques liberados a partir del bloque " + primerBloque);
 }
 
 
@@ -162,6 +181,7 @@ public void actualizarVistaSD() {
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo))) {
         writer.write("Estructura del Sistema de Archivos\n");
         writer.write("=================================\n\n");
+        registrarEvento("Estado del sistema guardado en " + nombreArchivo);
         guardarNodoEnTxt(writer, estructuraArchivos.getRaiz(), 0);
         writer.write("\nTabla de Asignación de Archivos:\n");
         writer.write("=================================\n");
@@ -169,6 +189,7 @@ public void actualizarVistaSD() {
         System.out.println("✅ Estado guardado en: " + nombreArchivo);
     } catch (IOException e) {
         System.out.println("❌ Error al guardar el estado: " + e.getMessage());
+        registrarEvento("Error al guardar el estado: " + e.getMessage());
     }
 }
 
@@ -235,10 +256,12 @@ public void cargarDesdeTxt(String nombreArchivo) {
 
         // 🔥 Asegurar que los nodos cargados sean editables en la UI
         simulacion.actualizarJTree(); 
+        registrarEvento("Estado del sistema cargado desde " + nombreArchivo);
 
         System.out.println("✅ Estado cargado desde: " + nombreArchivo);
     } catch (IOException e) {
         System.out.println("❌ Error al cargar el estado: " + e.getMessage());
+        registrarEvento("Error al cargar el estado: " + e.getMessage());
     }
 }
 
@@ -297,9 +320,37 @@ private void asignarBloquesDesdeCarga(Archivo archivo, int primerBloque, int tam
     }
 }
 
+private void registrarEvento(String mensaje) {
+    try {
+        // Obtener timestamp correctamente
+        LocalDateTime ahora = LocalDateTime.now();
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String timestamp = ahora.format(formato);
+
+        // Verificar que simulacion no sea null antes de llamar a esAdmin()
+        String usuario = (simulacion != null && simulacion.esAdmin()) ? "Administrador" : "Usuario";
+
+        // Mensaje formateado
+        String logMensaje = String.format("[%s] [%s] %s", timestamp, usuario, mensaje);
+
+        // Escribir en el archivo de log
+        FileWriter fw = new FileWriter("auditoria.log", true);
+        BufferedWriter writer = new BufferedWriter(fw);
+        writer.write(logMensaje);
+        writer.newLine();
+        writer.close();
+
+        System.out.println("✅ Log registrado: " + logMensaje);
+
+    } catch (IOException e) {
+        System.out.println("❌ Error al escribir en el log: " + e.getMessage());
+    } catch (Exception e) {
+        System.out.println("⚠️ Error inesperado: " + e.getMessage());
+    }
 
 
 
 
+}
 }
 
